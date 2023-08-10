@@ -16,6 +16,7 @@ struct Options
     bool printOnlyFullsize = false;
     bool printFullsize = false;
     bool blockSize = true;
+    bool fromFile = false;
 };
 
 void processFile(const std::filesystem::path &filePath, uint64_t &totalSize, const Options &options)
@@ -61,10 +62,10 @@ void processDirectory(const std::filesystem::path &path, uint64_t &totalSize, co
     }
 }
 
-int main(int argc, char *argv[])
+// Function to process command-line arguments
+Options processCommandLineArguments(int argc, char *argv[], uint64_t totalSize)
 {
     Options options;
-    uint64_t totalSize = 0;
     int startIndex = 1;
 
     for (int i = 1; i < argc; ++i)
@@ -90,6 +91,7 @@ int main(int argc, char *argv[])
         }
         else if (arg.find("--files-from=") == 0)
         {
+            options.fromFile = true;
             std::string filePath = arg.substr(FILE_PATH_INDEX);
             std::ifstream fileList(filePath);
             if (fileList.is_open())
@@ -103,10 +105,10 @@ int main(int argc, char *argv[])
             else
             {
                 std::cerr << "Unable to open file: " << filePath << std::endl;
-                return 1;
+                exit(1);
             }
             fileList.close();
-            return 1;
+            exit(1);
         }
         else
         {
@@ -115,7 +117,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    for (int i = startIndex; i < argc; ++i)
+    return options;
+}
+
+void processPaths(int argc, char *argv[], const Options &options, uint64_t &totalSize)
+{
+    for (int i = options.printOnlyFullsize || options.printFullsize ? 2 : 1; i < argc; ++i)
     {
         std::filesystem::path targetPath(argv[i]);
 
@@ -127,6 +134,15 @@ int main(int argc, char *argv[])
 
         processDirectory(targetPath, totalSize, options);
     }
+}
+
+int main(int argc, char *argv[])
+{
+    uint64_t totalSize = 0;
+    Options options = processCommandLineArguments(argc, argv, totalSize);
+
+    if (!options.fromFile)
+        processPaths(argc, argv, options, totalSize);
 
     if (options.printOnlyFullsize || options.printFullsize)
         std::cout << "Total size: " << totalSize << (options.blockSize ? " blocks" : " bytes") << std::endl;
