@@ -62,7 +62,7 @@ void processDirectory(const std::filesystem::path &path, uint64_t &totalSize, co
     }
 }
 
-// Function to process command-line arguments
+// Функция для обработки аргументов командной строки
 Options processCommandLineArguments(int argc, char *argv[], uint64_t totalSize)
 {
     Options options;
