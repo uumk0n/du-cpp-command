@@ -9,7 +9,7 @@
 
 ./du -s /path/to/folder
 
-./du --files-from= /path/to/file.txt
+./du --files-from=/path/to/file.txt
 
 ./du -b /path/to/folder
 
